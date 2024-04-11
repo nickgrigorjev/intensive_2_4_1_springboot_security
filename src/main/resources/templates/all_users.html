@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>All Users</title>
+</head>
+<body>
+
+<h1>All Users</h1>
+
+
+<table>
+    <style>
+        table {
+            width: 40%;
+        }
+
+        th, td {
+            border: 1px solid #000000;
+        }
+
+        .operations {
+            border: none;
+        }
+    </style>
+
+    <tr>
+        <th>Id</th>
+        <th>Name</th>
+        <th>Lastname</th>
+        <th>Age</th>
+        <th class="operations">Operations</th>
+    </tr>
+    <tr th:each="user : ${users}">
+        <td th:text="${user.getId()}">Id</td>
+        <td th:text="${user.getName()}">Name</td>
+        <td th:text="${user.getLastname()}">Lastname</td>
+        <td th:text="${user.getAge()}">Age</td>
+
+        <td class="operations">
+            &nbsp
+            <a th:href="@{/edit(id=${user.getId()})}">
+            <button>Update</button>
+            </a>
+            &nbsp
+            <a th:href="@{/remove(id=${user.getId()})}">
+            <button>Remove</button>
+            </a>
+        </td>
+
+</table>
+<br>
+<button onclick="window.location.href='/new'">Add New User</button>
+
+</body>
+</html>
