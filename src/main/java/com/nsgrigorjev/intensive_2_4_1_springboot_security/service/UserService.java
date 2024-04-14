@@ -1,12 +1,17 @@
-package com.nsgrigorjev.pp_2_4_1_springboot.service;
+package com.nsgrigorjev.intensive_2_4_1_springboot_security.service;
 
-import com.nsgrigorjev.pp_2_4_1_springboot.database.entity.User;
-import com.nsgrigorjev.pp_2_4_1_springboot.database.repository.UserRepository;
+import com.nsgrigorjev.intensive_2_4_1_springboot_security.database.entity.User;
+import com.nsgrigorjev.intensive_2_4_1_springboot_security.database.repository.RoleRepository;
+import com.nsgrigorjev.intensive_2_4_1_springboot_security.database.repository.UserRepository;
+import com.nsgrigorjev.intensive_2_4_1_springboot_security.dto.UserCreationDto;
+import com.nsgrigorjev.intensive_2_4_1_springboot_security.dto.UserResponseDto;
+import com.nsgrigorjev.intensive_2_4_1_springboot_security.mapper.UserCreationMapper;
+import com.nsgrigorjev.intensive_2_4_1_springboot_security.mapper.UserResponseMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -14,10 +19,12 @@ import java.util.List;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final UserCreationMapper userCreationMapper;
+    private final UserResponseMapper userResponseMapper;
 
-    public User findById(Long id) {
-        return userRepository.findById(id)
-                .orElseThrow();
+    public UserResponseDto findById(Long id) {
+        return userRepository.findById(id).map(userResponseMapper::map).orElseThrow();
     }
 
     public List<User> findAll() {
@@ -35,12 +42,28 @@ public class UserService {
     }
 
     @Transactional
-    public <S extends User> void persist(S entity) {
-        userRepository.save(entity);
+    public UserResponseDto persist(UserCreationDto userDto) {
+        return Optional.ofNullable(userDto).map(userCreationMapper::map).map(userRepository::save).map(userResponseMapper::map).orElseThrow();
     }
+
     @Transactional
-    public <S extends User> void update(S entity) {
-        userRepository.save(entity);
+    public UserResponseDto update(UserResponseDto userDto, List<String> rolesFromView) {
+        Optional<User> mayBeUserFromDb = userRepository.findById(userDto.getId());
+        User updateUser = new User();
+        updateUser.setId(userDto.getId());
+        updateUser.setUsername(userDto.getUsername());
+        updateUser.setName(userDto.getName());
+        updateUser.setLastname(userDto.getLastname());
+        updateUser.setAge(userDto.getAge());
+        updateUser.setPassword(mayBeUserFromDb.orElseThrow().getPassword());
+        if (rolesFromView == null) {
+            updateUser.setRoles(Collections.singleton(roleRepository.findRoleByRoleName("ROLE_USER")));
+        } else {
+            updateUser.setRoles(roleRepository.findByRoleNameIn(rolesFromView));
+        }
+        userRepository.save(updateUser);
+        return userResponseMapper.map(updateUser);
+
     }
 
 

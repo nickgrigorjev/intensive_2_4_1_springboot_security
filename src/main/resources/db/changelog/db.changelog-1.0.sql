@@ -4,6 +4,7 @@
 CREATE TABLE IF NOT EXISTS users
 (
     id SERIAL PRIMARY KEY,
+    username VARCHAR(64) NOT NULL UNIQUE,
     name VARCHAR(128) NOT NULL,
     last_name VARCHAR(128) NOT NULL,
     age SMALLINT CHECK (age > 0)

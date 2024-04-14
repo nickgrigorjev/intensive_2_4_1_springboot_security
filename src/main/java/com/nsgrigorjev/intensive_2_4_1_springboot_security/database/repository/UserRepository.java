@@ -1,8 +1,6 @@
-package com.nsgrigorjev.pp_2_4_1_springboot.database.repository;
+package com.nsgrigorjev.intensive_2_4_1_springboot_security.database.repository;
 
-import com.nsgrigorjev.pp_2_4_1_springboot.database.entity.User;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
+import com.nsgrigorjev.intensive_2_4_1_springboot_security.database.entity.User;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
 
@@ -15,11 +13,12 @@ public interface UserRepository extends CrudRepository<User, Long> {
     <S extends User> S save(S user);
 
     Optional<User> findById(Long id);
+
     List<User> findAll();
+
     void deleteById(Long id);
 
-
-
+    Optional<User> findByUsername(String username);
 
 
 }

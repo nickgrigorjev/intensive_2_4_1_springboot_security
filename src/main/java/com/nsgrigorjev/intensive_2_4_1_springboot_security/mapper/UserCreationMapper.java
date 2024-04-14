@@ -1,13 +1,15 @@
-package com.nsgrigorjev.pp_2_4_1_springboot_security.mapper;
+package com.nsgrigorjev.intensive_2_4_1_springboot_security.mapper;
 
-import com.nsgrigorjev.pp_2_4_1_springboot_security.database.entity.User;
-import com.nsgrigorjev.pp_2_4_1_springboot_security.dto.UserCreationDto;
-import com.nsgrigorjev.pp_2_4_1_springboot_security.dto.UserResponseDto;
+import com.nsgrigorjev.intensive_2_4_1_springboot_security.database.entity.Role;
+import com.nsgrigorjev.intensive_2_4_1_springboot_security.database.entity.User;
+import com.nsgrigorjev.intensive_2_4_1_springboot_security.dto.UserCreationDto;
+import com.nsgrigorjev.intensive_2_4_1_springboot_security.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import java.util.HashSet;
 import java.util.Optional;
 
 @Component
@@ -15,24 +17,8 @@ import java.util.Optional;
 public class UserCreationMapper implements Mapper<UserCreationDto, User> {
 
     private final PasswordEncoder passwordEncoder;
+    private final RoleService roleService;
 
-    public static UserResponseDto toDto(User entity) {
-        return new UserResponseDto(
-                entity.getId(),
-                entity.getUsername(),
-                entity.getName(),
-                entity.getLastname(),
-                entity.getAge(),
-                entity.getRoles());
-    }
-
-    public static User toEntity(UserCreationDto dto) {
-        return new User(dto.getName(), dto.getLastname(), dto.getAge());
-    }
-
-    public static User toEntity(UserResponseDto dto) {
-        return new User(dto.getId(), dto.getName(), dto.getLastname(), dto.getAge());
-    }
 
     @Override
     public User map(UserCreationDto object) {
@@ -42,18 +28,22 @@ public class UserCreationMapper implements Mapper<UserCreationDto, User> {
     }
 
     private void copy(UserCreationDto object, User user) {
+
+        HashSet<Role> roles = new HashSet<>();
+        Role role = roleService.findByRoleName("ROLE_USER");
+        roles.add(role);
+
         user.setUsername(object.getUsername());
         user.setName(object.getName());
         user.setLastname(object.getLastname());
         user.setAge(object.getAge());
-        user.setRoles(object.getRoles());
 
         Optional.ofNullable(object.getRawPassword())
                 .filter(StringUtils::hasText)
                 .map(passwordEncoder::encode)
                 .ifPresent(user::setPassword);
-        //TODO 08.04.2024 - 23:49: запилить вставку множества ролей
-//        user.setRoles();
+
+        user.setRoles(roles);
     }
 
     @Override

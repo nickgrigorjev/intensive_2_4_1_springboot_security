@@ -26,6 +26,7 @@
 
     <tr>
         <th>Id</th>
+        <th>Username</th>
         <th>Name</th>
         <th>Lastname</th>
         <th>Age</th>
@@ -33,24 +34,28 @@
     </tr>
     <tr th:each="user : ${users}">
         <td th:text="${user.getId()}">Id</td>
+        <td th:text="${user.getUsername()}">Username</td>
         <td th:text="${user.getName()}">Name</td>
         <td th:text="${user.getLastname()}">Lastname</td>
         <td th:text="${user.getAge()}">Age</td>
 
         <td class="operations">
             &nbsp
-            <a th:href="@{/edit(id=${user.getId()})}">
+            <a th:href="@{/admin/edit(id=${user.getId()})}">
             <button>Update</button>
             </a>
             &nbsp
-            <a th:href="@{/remove(id=${user.getId()})}">
+            <a th:href="@{/admin/remove(id=${user.getId()})}">
             <button>Remove</button>
             </a>
         </td>
 
 </table>
 <br>
-<button onclick="window.location.href='/new'">Add New User</button>
-
+<button onclick="window.location.href='/admin/new'">Add New User</button>
+<br>
+<form th:action="@{/logout}" th:method="POST">
+    <button type="submit">Log out</button>
+</form>
 </body>
 </html>

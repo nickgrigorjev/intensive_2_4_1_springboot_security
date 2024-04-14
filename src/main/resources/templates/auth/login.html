@@ -5,8 +5,8 @@
     <title>Login Page</title>
 </head>
 <body>
-<form name="f" method="post" action="/auth/login">
-<!--    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>-->
+<form name="f" method="post" action="/process_login">
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
     <div style="color: tomato" th:if="${param.error}">
         Bad credentials

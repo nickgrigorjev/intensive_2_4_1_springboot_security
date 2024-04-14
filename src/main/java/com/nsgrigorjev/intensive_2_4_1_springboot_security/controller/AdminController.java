@@ -1,39 +1,42 @@
 package com.nsgrigorjev.intensive_2_4_1_springboot_security.controller;
 
-import com.nsgrigorjev.intensive_2_4_1_springboot_security.database.entity.User;
 import com.nsgrigorjev.intensive_2_4_1_springboot_security.dto.UserCreationDto;
 import com.nsgrigorjev.intensive_2_4_1_springboot_security.dto.UserResponseDto;
-import com.nsgrigorjev.intensive_2_4_1_springboot_security.mapper.UserMapper;
+import com.nsgrigorjev.intensive_2_4_1_springboot_security.service.RoleService;
 import com.nsgrigorjev.intensive_2_4_1_springboot_security.service.UserService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
+import static org.springframework.web.bind.annotation.RequestMethod.GET;
+
+@RequiredArgsConstructor
 @Controller
-public class UserController {
+@RequestMapping("/admin")
+public class AdminController {
+    private static final String REDIRECT_TO_USERS = "redirect:/admin/users";
     private final UserService userService;
-    private static final String REDIRECT = "redirect:/";
+    private final RoleService roleService;
 
-    @Autowired
-    public UserController(UserService userService) {
-        this.userService = userService;
+
+    @RequestMapping(value = "", method = GET)
+    public String adminPage() {
+        return "admin";
     }
 
-    @RequestMapping(value = "/", method = RequestMethod.GET)
+    @RequestMapping(value = "/users", method = GET)
     public String showAllUsers(Model model) {
         model.addAttribute("users", userService.findAll());
         return "all_users";
     }
 
-    @RequestMapping(value = "/new", method = RequestMethod.GET)
-    public String addNewUser(Model model) {
-        model.addAttribute("user", new User());
+    @RequestMapping(value = "/new", method = GET)
+    public String addNewUser(@ModelAttribute("user") UserCreationDto user) {
         return "user_create";
     }
 
@@ -41,34 +44,37 @@ public class UserController {
     public String saveNewUser(@ModelAttribute("user") @Valid UserCreationDto user,
                               BindingResult bindingResult) {
         if (bindingResult.hasErrors()) {
-            return "user_create";
+            return "redirect:/admin/create";
         } else {
-            userService.persist(UserMapper.toEntity(user));
-            return REDIRECT;
+            userService.persist(user);
+            return REDIRECT_TO_USERS;
         }
-    }
-
-    @RequestMapping(value = "/edit", method = RequestMethod.GET)
-    public String updateUser(@RequestParam("id") Long id, Model model) {
-        model.addAttribute("user", userService.findById(id));
-        return "user_edit";
     }
 
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public String saveUpdateUser(@ModelAttribute("user") @Valid UserResponseDto user,
-                                 BindingResult bindingResult) {
+                                 BindingResult bindingResult,
+                                 @RequestParam(value = "rolesFromView", required = false) List<String> rolesFromView,
+                                 Model model) {
         if (bindingResult.hasErrors()) {
+            model.addAttribute("roles", roleService.findAll());
             return "user_edit";
         } else {
-            userService.update(UserMapper.toEntity(user));
-            return REDIRECT;
+            userService.update(user, rolesFromView);
+            return REDIRECT_TO_USERS;
         }
     }
 
-    @RequestMapping(value = "/remove", method = RequestMethod.GET)
-    public String deleteUser(@RequestParam("id") Long id,
-                             @ModelAttribute("user") UserResponseDto user) {
+    @RequestMapping(value = "/edit", method = GET)
+    public String updateUser(@RequestParam("id") Long id, Model model) {
+        model.addAttribute("user", userService.findById(id));
+        model.addAttribute("roles", roleService.findAll());
+        return "user_edit";
+    }
+
+    @RequestMapping(value = "/remove", method = GET)
+    public String deleteUser(@RequestParam("id") Long id) {
         userService.deleteById(id);
-        return REDIRECT;
+        return REDIRECT_TO_USERS;
     }
 }
